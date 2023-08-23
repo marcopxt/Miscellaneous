@@ -1,0 +1,50 @@
+
+###>>>>====--------------------------------------------------------------
+###> Implementation of a pareto
+###>>>>====--------------------------------------------------------------
+
+
+pareto_front <- function(x, y, fronts = 1, sort = TRUE) {
+  stopifnot(length(x) == length(y))
+  d <- data.frame(x, y)
+  Dtemp <- D <- d[order(d$x, d$y, decreasing = FALSE), ]
+  df <- data.frame()
+  i <- 1
+  while (nrow(Dtemp) >= 1 & i <= min(fronts)) {
+    these <- Dtemp[which(!duplicated(cummin(Dtemp$y))), ]
+    these$pareto_front <- i
+    df <- rbind(df, these)
+    Dtemp <- Dtemp[!row.names(Dtemp) %in% row.names(these), ]
+    i <- i + 1
+  }
+  ret <- merge(x = d, y = df, by = c("x", "y"), all.x = TRUE, sort = sort)
+  return(ret)
+}
+
+pareto_front <- function(x, y, num_fronts = 10, should_sort = FALSE) {
+  # Input validation
+  stopifnot(
+    length(x) == length(y),
+    is.numeric(x),
+    is.numeric(y)
+  )
+  
+  data <- data.frame(x = x, y = y)
+  sorted_data <- data[order(data$x, data$y, decreasing = TRUE), ]
+  pareto_data <- data.frame()
+  
+  for (i in 1:min(num_fronts, nrow(sorted_data))) {
+    non_dominated <- sorted_data[which(!duplicated(cummax(sorted_data$y))), ]
+    non_dominated$pareto_front <- i
+    pareto_data <- rbind(pareto_data, non_dominated)
+    sorted_data <- sorted_data[!row.names(sorted_data) %in% row.names(non_dominated), ]
+  }
+  
+  ret <- merge(x = data, y = pareto_data, by = c("x", "y"), all.x = TRUE, sort = should_sort)
+  return(ret)
+}
+
+
+
+fin = pareto_front(x = usef_add$Usefulness,y= usef_add$Mean)
+head(fin, 50)
