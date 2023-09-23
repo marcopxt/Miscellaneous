@@ -1,0 +1,148 @@
+################################################################################
+### Simulations for the multitrait using BGLR for DH
+
+###>>>>====--------------------------------------------------------------
+###> 1. Creating parents and Starting the pipeline
+###>>>>====--------------------------------------------------------------
+rm(list=ls())
+library(AlphaSimR)
+require(AGHmatrix)
+require(BGLR)
+
+##>>>----------- Setting the base parameters
+
+nParents = 100
+nParents_public = 50
+nParents_private = 100
+nQtl = c(100,25)
+nSnp = c(123,123)
+
+MeanG = c(100,20)
+VarG =  c(20,2) 
+
+ddVar = c(0.3,0.5)
+ddMean = c(0.92,0.4)
+
+h2 = c(0.5,0.8)
+
+varE = c(270,10)
+
+
+##>>>----------- Initializing the Program: Creating the founder population 
+
+set.seed(41469457)
+
+##>>>----------- Creating the founder population
+
+founderPop <- runMacs(nInd = nParents, nChr = 10, segSites = 600, inbred = FALSE,
+                      species = "MAIZE", split = 30, ploidy = 2L,
+                      manualCommand = NULL, manualGenLen = NULL)
+
+
+##>>>----------- Setting the traits parameters 
+
+SP <- SimParam$new(founderPop)
+SP$restrSegSites(123,123)
+
+SP$addSnpChip(123)
+
+#=== the traits 
+
+#t1
+SP$addTraitAD(nQtl[1],mean=MeanG[1],var=VarG[1], meanDD = ddMean[1], varDD = ddVar[1])
+
+#t2
+SP$addTraitAD(nQtl[2],mean=MeanG[2],var=VarG[2], meanDD = ddMean[2], varDD = ddVar[2])
+
+
+# Residual variance
+SP$setVarE(varE=varE)
+
+###>>>>====--------------------------------------------------------------
+###> 2. Population
+###>>>>====--------------------------------------------------------------
+
+set.seed(748962356)
+Parents_public = newPop(founderPop[sample(c(1:100),50, replace = FALSE)])
+Parents_public_update = Parents_public
+
+# Advance population in one generation
+Pop = Parents_public_update
+
+# Selecting 100 individuals F1
+F1_public = randCross(Pop, 50, 10, ignoreSexes = TRUE) 
+F1_DH = makeDH(F1_public, 2)
+F1_DH = setPheno(F1_DH)
+F1_DHSel = selectInd(F1_DH, 100, trait=selIndex, b= c(0.5,0.5))
+
+###>>>>====--------------------------------------------------------------
+###> 3. Marker data
+###>>>>====--------------------------------------------------------------
+# Genotype
+Markers = pullSnpGeno(F1_DHSel)
+colnames(Markers) = c(paste0("SNP",c(1:1230)))
+rownames(Markers) = c(paste0("G",c(1:100)))
+
+
+###>>>>====--------------------------------------------------------------
+###> 4. Criterion matrix
+###>>>>====--------------------------------------------------------------
+
+#GV
+Criterion = as.matrix(F1_DHSel@pheno)
+rownames(Criterion) = c(paste0("G",c(1:100)))
+
+
+###>>>>====--------------------------------------------------------------
+###> 5. G Matrix
+###>>>>====--------------------------------------------------------------
+
+G <- AGHmatrix::Gmatrix(Markers)
+superheat::superheat(G)
+
+###>>>>====--------------------------------------------------------------
+###> 6. Markers effect
+###>>>>====--------------------------------------------------------------
+
+###>>>------ A model for effects
+# ETA
+ETAM=list(A = list(X=Markers, model="SpikeSlab", saveEffects=TRUE))
+
+
+Y = as.matrix(Criterion)
+
+fmSM<-Multitrait(y = Y, 
+                 ETA = ETAM,
+                 nIter = 12000, 
+                 burnIn = 2000,
+                 verbose=FALSE)
+
+
+###>>>------ effects
+addEff = as.matrix(cbind(fmSM$ETA[[1]]$b))
+
+
+###>>>>====--------------------------------------------------------------
+###> 7. Markers map
+###>>>>====--------------------------------------------------------------
+
+snp_pos1 = getSnpMap(snpChip=1, simParam=SP)
+
+snp_pos = snp_pos1[,c(2,4,1)]
+colnames(snp_pos) = c("chr","pos",'mkr')
+
+snp_pos$pos = snp_pos$pos*100
+
+rownames(snp_pos) = NULL #$mkr = paste(1:length(snp_pos$mkr))
+
+Map.In = snp_pos
+dim(Map.In)
+
+###>>>>====--------------------------------------------------------------
+###> 8. Saving the outputs
+###>>>>====--------------------------------------------------------------
+
+save(G, Map.In, addEff, Criterion, Markers, file = 'dat1.RData')
+
+# Saving the outputs
+save(Markers, G, addEff, Criterion, Map.In, file="DH_ex.RData")
