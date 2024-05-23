@@ -8,3 +8,4 @@ Several scripts that I have builted and now making them avalaible
 2. Inbreeding measure from the SNP dataset
 3. Quadpop example. Try to incorporate later
 4. Dominated Pareto implementation. It works just fine for a few thousand data points.
+5. Simulatio via AlphaSimR of a breeding program using BGLR and multi-traits.  
