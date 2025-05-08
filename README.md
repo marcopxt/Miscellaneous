@@ -10,3 +10,4 @@ Several scripts that I have built and am now making available.
 3. Quadpop example. I'll try to incorporate it later.  
 4. Dominated Pareto implementation. It works just fine for a few thousand data points.  
 5. Simulation via AlphaSimR of a breeding program using BGLR and multi-traits.  
+6. Function to get Bayesian stats for FAST tools as described in Smith and Cullis (2018). The input should be a factor analytic model from BGLR package.
