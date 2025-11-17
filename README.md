@@ -2,7 +2,7 @@
 
 Several scripts that I have built and am now making available.
 
-### Hope it helps anybody :)
+### Hope it helps someone :)
 
 1. Script to estimate the relationship matrix using SNP data: Additive from VanRaden (2008) and dominance matrix from Vitezica (2013) and Su et al. (2012).  
 
