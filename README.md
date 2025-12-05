@@ -11,3 +11,10 @@ Several scripts that I have built and am now making available.
 4. Dominated Pareto implementation. It works just fine for a few thousand data points.  
 5. Simulation via AlphaSimR of a breeding program using BGLR and multi-traits.  
 6. Function to get Bayesian stats for FAST tools as described in Smith and Cullis (2018). The input should be a factor analytic model from BGLR package.
+
+Note on HPG:
+scp -r deamorimpeixotom@hpg.rc.ufl.edu:/blue/mresende/share/marcopxt/PotatoGE/4.Pred_paper/2.Pred_paper/plot/* /Users/deamorimpeixotom/fromHPG/
+
+scp -r deamorimpeixotom@hpg.rc.ufl.edu:/blue/mresende/share/lvanderlaan/Files/PotatoPrediction/Analysis/WorkingCode/DSSAT/plot* /Users/deamorimpeixotom/fromHPG/FuturePred/
+
+
